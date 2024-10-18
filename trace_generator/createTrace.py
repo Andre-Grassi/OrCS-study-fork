@@ -11,6 +11,7 @@ if len(sys.argv) != 3:
 command = sys.argv[1]
 destination = sys.argv[2]
 
+# O tracer é uma pintool, que está escrita em ./extras/pinplay/sinuca_tracer.cpp
 cmd = '../../../pin -t ../bin/intel64/sinuca_tracer.so -trace x86 -output "{}" -- "{}"'.format(destination, command)
 tracerFolder = "cd extras/pinplay/sinuca_tracer"
 commandReturnFile = "mv {}.tid*.out.gz ../../../".format(destination)
