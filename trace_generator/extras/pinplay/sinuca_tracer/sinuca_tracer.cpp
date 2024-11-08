@@ -572,10 +572,14 @@ VOID DynamicOMP_char(char *sync_str, THREADID threadid, bool is_spawn) {
 //=============================================================================
 // This routine is executed for each image.
 VOID ImageLoad(IMG img, VOID *) {
+    // WHAT o que é HMC e VIMA
     // HMC data initialization - HMC Traces
     data_instr hmc_x86_data[HMC_INS_COUNT], vim_x86_data[VIMA_INS_COUNT], mps_x86_data[MPS_INS_COUNT];
+
+    // WHAT o que isso faz?
     initialize_intrinsics(hmc_x86_data, vim_x86_data, mps_x86_data);
 
+    // WHAT o que esses vetores fazem?
     TRACE_GENERATOR_DEBUG_PRINTF("ImageLoad()\n");
     /// Only the thread master runs these calls
     std::vector<const char*> OMP_barrier_master_start;
@@ -645,6 +649,8 @@ VOID ImageLoad(IMG img, VOID *) {
         /// No Wait
         ORCS_tracing_control_stop.push_back(("_Z17ORCS_tracing_stopv"));
 
+    // WHAT o que é GOMP?
+    // Implementação da biblioteca de tempo de execução do OpenMP para o compilador GCC
     bool found_GOMP;
     std::string rtn_name;
 
@@ -656,6 +662,7 @@ VOID ImageLoad(IMG img, VOID *) {
             found_GOMP = false;
             rtn_name = RTN_Name(rtn);
 
+            // WHAT Syntetic Traces?
             // Syntetic Traces (HMC, x86, VIMA, MIPS)
             if ((KnobTrace.Value().compare(0, 3, "x86")) != 0) {
                 synthetic_trace_generation(rtn_name,
@@ -767,6 +774,7 @@ VOID ImageLoad(IMG img, VOID *) {
             }
             // ~ printf("%s\n", rtn_name.c_str());
 
+            // WHAT o que Barrier significa?
             /// Barrier only on Master, insert on all the traces (PARALLEL_END)
             for (uint32_t i = 0;
                     i < OMP_barrier_master_end.size() && !found_GOMP; i++) {
@@ -988,6 +996,7 @@ int main(int argc, char *argv[]) {
     max_threads = KnobNumberThreads.Value();
     printf("GCC Threads = %d\n", max_threads);
 
+    // WHAT
     /// Initialize the pin lock
     PIN_InitLock(&lock);
     thread_data = new thread_data_t[max_threads];
@@ -998,6 +1007,7 @@ int main(int argc, char *argv[]) {
 
     pinplay_engine.Activate(argc, argv, KnobLogger, KnobReplayer);
 
+    // WHAT
     // Activate alarm, must be done before PIN_StartProgram
     control.RegisterHandler(handleControlEvent, 0, FALSE);
     control.Activate();
@@ -1016,7 +1026,9 @@ int main(int argc, char *argv[]) {
             KnobOutputFile.Value().c_str());
 
     gzStaticTraceFile = gzopen(stat_file_name, "wb");   /// Open the .gz file
+    // WHAT o que esse ASSERTX faz?
     ASSERTX(gzStaticTraceFile != NULL);                 /// Check the .gz file
+    // WHAT o que está sendo escrito?
     gzwrite(gzStaticTraceFile, tempStr.c_str(), strlen(tempStr.c_str()));
 
     printf("Real Static File = %s => READY !\n", stat_file_name);
@@ -1026,6 +1038,7 @@ int main(int argc, char *argv[]) {
     //==========================================================================
     static char dyn_file_name[500];
 
+    // Para cada thread abre um arquivo de trace dinâmico
     for (UINT32 i = 0; i < max_threads; i++) {
         dyn_file_name[0] = '\0';
         snprintf(dyn_file_name,
@@ -1051,6 +1064,7 @@ int main(int argc, char *argv[]) {
     //==========================================================================
     static char mem_file_name[500];
 
+    // Para cada thread abre um arquivo de trace de memória
     for (UINT32 i = 0; i < max_threads; i++) {
         mem_file_name[0] = '\0';
         snprintf(mem_file_name,
