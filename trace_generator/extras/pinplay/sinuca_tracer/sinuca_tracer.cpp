@@ -296,6 +296,7 @@ VOID trace_instruction(TRACE trace, VOID *v) {
         RTN_Close(rtn);
     }
 
+    // WHAT??
     //  SpinLock Static Linked check (its binary has a PAUSE instruction)
     if (strcmp(rtn_name.c_str(), "omp_get_num_procs") == 0 ||
         strcmp(rtn_name.c_str(), "gomp_barrier_wait_end") == 0 ||
@@ -303,7 +304,9 @@ VOID trace_instruction(TRACE trace, VOID *v) {
         return;
     }
 
+
     for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
+        // WHAT Então não gera traço do que não for x86???
         if (((KnobTrace.Value().compare(0, 3, "x86")) != 0)
             && icheck_conditions(rtn_name))
             continue;
