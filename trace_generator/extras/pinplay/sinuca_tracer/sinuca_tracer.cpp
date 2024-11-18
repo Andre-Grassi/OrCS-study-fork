@@ -101,6 +101,7 @@ enum sync_t {
 //
 // thread_data_t* thread_data; // Lock for methods shared among mult threads
 
+// what controller do que????
 LOCALVAR CONTROLLER::CONTROL_MANAGER control;
 
 // ~ CONTROLLER::CONTROL control;       /// Control to PinPoints
@@ -288,9 +289,12 @@ VOID trace_instruction(TRACE trace, VOID *v) {
 
     std::string rtn_name;
     RTN rtn = TRACE_Rtn(trace);
+    // Pega o nome da rotina, e escreve num arquivo
+    // Corresponde ao traço estático
     if (RTN_Valid(rtn)) {
         RTN_Open(rtn);
         rtn_name = RTN_Name(rtn);
+        // what o que o # significa? Tem outro printf que usa @ na formatação
         snprintf(bbl_count_str, TRACE_LINE_SIZE, "#%s\n", rtn_name.c_str());
         write_static_char(bbl_count_str);    // Write the static trace
         RTN_Close(rtn);
@@ -315,6 +319,7 @@ VOID trace_instruction(TRACE trace, VOID *v) {
         // Write the static trace (assembly instructions)
         //----------------------------------------------------------------------
         count_trace++;              // Identify basic blocks with a counter id
+        // IMPORTANT identifica os blocos básicos com um id de contador obtido com count_trace
         snprintf(bbl_count_str, TRACE_LINE_SIZE, "@%u\n", count_trace);
         write_static_char(bbl_count_str);    // Write the static trace
 
@@ -580,6 +585,7 @@ VOID ImageLoad(IMG img, VOID *) {
     initialize_intrinsics(hmc_x86_data, vim_x86_data, mps_x86_data);
 
     // WHAT o que esses vetores fazem?
+    // Define vetores de strings que contêm os nomes das funções OpenMP e ORCS que serão instrumentadas.
     TRACE_GENERATOR_DEBUG_PRINTF("ImageLoad()\n");
     /// Only the thread master runs these calls
     std::vector<const char*> OMP_barrier_master_start;
@@ -650,7 +656,7 @@ VOID ImageLoad(IMG img, VOID *) {
         ORCS_tracing_control_stop.push_back(("_Z17ORCS_tracing_stopv"));
 
     // WHAT o que é GOMP?
-    // Implementação da biblioteca de tempo de execução do OpenMP para o compilador GCC
+    // GOMP: implementação da biblioteca de tempo de execução do OpenMP para o compilador GCC
     bool found_GOMP;
     std::string rtn_name;
 
@@ -741,6 +747,7 @@ VOID ImageLoad(IMG img, VOID *) {
                 // ~ RTN_Close(rtn);
             // ~ }
 
+            // Instrumentação de funções ORCS
             for (uint32_t i = 0; i < ORCS_tracing_control_start.size(); i++){
                 if (strcmp(rtn_name.c_str(), ORCS_tracing_control_start[i]) == 0){
                     RTN_Open (rtn);
@@ -775,6 +782,7 @@ VOID ImageLoad(IMG img, VOID *) {
             // ~ printf("%s\n", rtn_name.c_str());
 
             // WHAT o que Barrier significa?
+            // Instrumentação de funções OpenMP
             /// Barrier only on Master, insert on all the traces (PARALLEL_END)
             for (uint32_t i = 0;
                     i < OMP_barrier_master_end.size() && !found_GOMP; i++) {
@@ -998,9 +1006,13 @@ int main(int argc, char *argv[]) {
 
     // WHAT
     /// Initialize the pin lock
+    /*
+    a lock or mutex (from mutual exclusion) is a synchronization primitive that prevents state from being modified or accessed by multiple threads of execution at once. Locks enforce mutual exclusion concurrency control policies, and with a variety of possible methods there exist multiple unique implementations for different applications. 
+    */
     PIN_InitLock(&lock);
     thread_data = new thread_data_t[max_threads];
     for (uint32_t i = 0; i < max_threads; i++) {
+        // Dyn_lock provavelmente significa Dynamic Lock
         PIN_InitLock(&thread_data[i].dyn_lock);
         thread_data[i].is_instrumented_bbl = false;
     }
